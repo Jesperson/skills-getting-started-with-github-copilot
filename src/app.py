@@ -11,16 +11,7 @@ from fastapi.responses import RedirectResponse
 import os
 from pathlib import Path
 
-app = FastAPI(title="Mergington High School API",
-              description="API for viewing and signing up for extracurricular activities")
-
-# Mount the static files directory
-current_dir = Path(__file__).parent
-app.mount("/static", StaticFiles(directory=os.path.join(Path(__file__).parent,
-          "static")), name="static")
-
-# In-memory activity database
-activities = {
+INITIAL_ACTIVITIES = {
     "Chess Club": {
         "description": "Learn strategies and compete in chess tournaments",
         "schedule": "Fridays, 3:30 PM - 5:00 PM",
@@ -76,6 +67,25 @@ activities = {
         "participants": ["ethan@mergington.edu", "amelia@mergington.edu"]
     }
 }
+
+app = FastAPI(title="Mergington High School API",
+              description="API for viewing and signing up for extracurricular activities")
+
+# Mount the static files directory
+current_dir = Path(__file__).parent
+app.mount("/static", StaticFiles(directory=os.path.join(Path(__file__).parent,
+          "static")), name="static")
+
+# In-memory activity database
+activities = INITIAL_ACTIVITIES.copy()
+
+
+def reset_activities():
+    activities.clear()
+    activities.update({name: {
+        key: value.copy() if isinstance(value, list) else value
+        for key, value in details.items()
+    } for name, details in INITIAL_ACTIVITIES.items()})
 
 
 @app.get("/")
